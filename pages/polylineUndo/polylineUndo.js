@@ -2,6 +2,66 @@ import Stack from './stack';
 import Konva from "konva";
 import { createMachine, interpret } from "xstate";
 
+class command {
+    execute() {};
+    undo() {};
+}
+
+class UndoManager {
+    constructor() {
+        this.undoStack = new Stack();
+        this.redoStack = new Stack();
+    }
+    executeCommand(command) {
+        try {
+            command.execute();
+            this.undoStack.push(command);
+            this.miseAjourUndoRedoButton()
+            
+        } catch (error) {
+            console.log("Erreur" + e)
+        }
+    }
+    undo(){
+        if (this.canRedo()) {
+            const command = this.redoStack.pop()
+            command.execute();
+            this.undoStack.push(command);
+            this.miseAjourUndoRedoButton();
+        }
+
+    }
+    // verifie que le stack undo n'es pas vide avant de faire un Undo
+    canUndo() {
+        return !this.undoStack.isEmpty()
+    }
+    // verifie que le Stack redo n'est pas vide avant de faire un REDO 
+    canRedo(){
+        return !this.redoStack.isEmpty()
+      }
+
+    miseAjourUndoRedoButton(){
+        undoButton.disabled = !this.canUndo();
+        redoButton.disabled = !this.canRedo();
+    }
+
+}
+
+class  SaveCommand extends command {
+    constructor(line, dessin){
+        super()
+        this.line = line
+        this.dessin = dessin
+    }
+    execute(){
+        this.dessin.add(this.line)
+    }
+
+    undo(){
+        this.line.remove()
+    }
+}
+
 const stage = new Konva.Stage({
     container: "container",
     width: 400,
@@ -172,8 +232,19 @@ window.addEventListener("keydown", (event) => {
     polylineService.send(event.key);
 });
 
-// bouton Undo
+// déclaration des Constantes 
 const undoButton = document.getElementById("undo");
+const redoButton = document.getElementById("redo");
+const undoManager = new UndoManager();
+
+// bouton Undo
+
+
 undoButton.addEventListener("click", () => {
-    
-});
+    undoManager.undo();
+})
+
+
+redoButton.addEventListener("click", () => {
+    undoManager.redo();
+})
