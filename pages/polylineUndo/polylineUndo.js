@@ -31,6 +31,8 @@ class UndoManager {
         }
 
     }
+    undoManager = new UndoManager();
+
     // verifie que le stack undo n'es pas vide avant de faire un Undo
     canUndo() {
         return !this.undoStack.isEmpty()
@@ -46,6 +48,7 @@ class UndoManager {
     }
 
 }
+
 
 class  SaveCommand extends command {
     constructor(line, dessin){
